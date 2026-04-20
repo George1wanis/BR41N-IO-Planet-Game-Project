@@ -1,0 +1,47 @@
+[gd_scene load_steps=7 format=3 ]
+
+[ext_resource type="Shader" path="res://assets/atmosphere.gdshader" id="1_shader"]
+
+[sub_resource type="GDScript" id="1"]
+script/source = "extends StaticBody3D
+
+func _process(delta):
+	rotate_y(delta * -0.14) # Retrograde rotation for Uranus (17.2 hours)
+"
+
+[sub_resource type="StandardMaterial3D" id="2"]
+albedo_color = Color(0.6, 0.8, 0.9, 1)
+roughness = 0.6
+
+[sub_resource type="SphereMesh" id="3"]
+material = SubResource("2")
+radius = 8.0 # Relative to Earth (2.0 radius) -> 2 * (51118/12756) = 8.0
+height = 16.0
+
+[sub_resource type="SphereShape3D" id="4"]
+radius = 8.0
+
+[sub_resource type="ShaderMaterial" id="5"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/atmosphere_color = Color(0.6, 0.8, 0.9, 1)
+shader_parameter/outer_intensity = 1.5
+shader_parameter/inner_intensity = 0.5
+shader_parameter/fresnel_power = 3.0
+
+[sub_resource type="SphereMesh" id="6"]
+material = SubResource("5")
+radius = 8.4 # Slightly larger than planet mesh (8.0 * 1.05)
+height = 16.8
+
+[node name="Uranus" type="StaticBody3D"]
+script = SubResource("1")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("3")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("4")
+
+[node name="Atmosphere" type="MeshInstance3D" parent="."]
+mesh = SubResource("6")
