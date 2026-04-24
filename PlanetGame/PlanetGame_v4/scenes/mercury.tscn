@@ -1,0 +1,57 @@
+[gd_scene load_steps=8 format=3 uid="uid://booni1dwmnp4r"]
+
+[ext_resource type="Shader" uid="uid://c28gu88wxpfcv" path="res://assets/atmosphere.gdshader" id="1_shader"]
+
+[sub_resource type="GDScript" id="1"]
+script/source = "extends StaticBody3D
+
+const FLICKER_HZ: float = 8.0
+var _time_acc: float = 0.0
+var _half_period: float = 1.0 / (FLICKER_HZ * 2.0)
+var _flicker_on: bool = true
+
+func _process(delta):
+	rotate_y(delta * 0.003) # Very slow rotation for Mercury (58.6 Earth days)
+# 8 Hz SSVEP flicker: toggle mesh visibility for maximum contrast
+	_time_acc += delta
+	if _time_acc >= _half_period:
+		_time_acc -= _half_period
+		_flicker_on = !_flicker_on
+		$MeshInstance3D.visible = _flicker_on
+"
+
+[sub_resource type="StandardMaterial3D" id="2"]
+albedo_color = Color(0.7, 0.7, 0.7, 1)
+roughness = 0.8
+
+[sub_resource type="SphereMesh" id="3"]
+material = SubResource("2")
+radius = 0.8
+height = 1.6
+
+[sub_resource type="SphereShape3D" id="4"]
+radius = 0.8
+
+[sub_resource type="ShaderMaterial" id="5"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/atmosphere_color = Color(0.7, 0.7, 0.7, 0.2)
+shader_parameter/outer_intensity = 0.5
+shader_parameter/inner_intensity = 0.1
+shader_parameter/fresnel_power = 2.0
+
+[sub_resource type="SphereMesh" id="6"]
+material = SubResource("5")
+radius = 0.84
+
+[node name="Mercury" type="StaticBody3D"]
+script = SubResource("1")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+mesh = SubResource("3")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("4")
+
+[node name="Atmosphere" type="MeshInstance3D" parent="."]
+mesh = SubResource("6")
