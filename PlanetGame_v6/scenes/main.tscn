@@ -1,0 +1,141 @@
+[gd_scene load_steps=19 format=3 uid="uid://cuua75gcfbuf8"]
+
+[ext_resource type="Script" uid="uid://d3q8iwy1f4nx8" path="res://scripts/planet_manager.gd" id="1_manager"]
+[ext_resource type="Script" uid="uid://cc35yd4oc4b6m" path="res://scripts/spaceship.gd" id="2_spaceship"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_1"]
+sky_top_color = Color(0, 0, 0, 1)
+sky_horizon_color = Color(0.02, 0.02, 0.05, 1)
+ground_bottom_color = Color(0, 0, 0, 1)
+ground_horizon_color = Color(0.02, 0.02, 0.05, 1)
+
+[sub_resource type="Sky" id="Sky_1"]
+sky_material = SubResource("ProceduralSkyMaterial_1")
+
+[sub_resource type="Environment" id="Environment_1"]
+background_mode = 2
+sky = SubResource("Sky_1")
+ambient_light_source = 2
+ambient_light_color = Color(0.15, 0.15, 0.2, 1)
+tonemap_mode = 2
+glow_enabled = true
+glow_intensity = 0.5
+glow_strength = 1.1
+glow_bloom = 0.2
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_rocket"]
+top_radius = 0.4
+bottom_radius = 0.8
+height = 3.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_rocket"]
+albedo_color = Color(0.9, 0.1, 0.1, 1)
+metallic = 0.6
+roughness = 0.3
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_nose"]
+top_radius = 0.0
+bottom_radius = 0.4
+height = 1.0
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_astro"]
+radius = 0.3
+height = 0.8
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_white"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_visor"]
+albedo_color = Color(0.1, 0.1, 0.1, 1)
+metallic = 0.9
+roughness = 0.1
+
+[sub_resource type="Gradient" id="Gradient_fire"]
+offsets = PackedFloat32Array(0, 0.2, 0.6, 1)
+colors = PackedColorArray(1, 1, 0.5, 1, 1, 0.5, 0, 1, 0.8, 0, 0, 1, 0.2, 0, 0, 0)
+
+[sub_resource type="GradientTexture1D" id="GradientTexture_color"]
+gradient = SubResource("Gradient_fire")
+
+[sub_resource type="Curve" id="Curve_particles"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="CurveTexture_scale"]
+curve = SubResource("Curve_particles")
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_fire"]
+direction = Vector3(0, -1, 0)
+spread = 15.0
+initial_velocity_min = 5.0
+initial_velocity_max = 8.0
+gravity = Vector3(0, 0, 0)
+scale_min = 0.5
+scale_max = 1.5
+scale_curve = SubResource("CurveTexture_scale")
+color_ramp = SubResource("GradientTexture_color")
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_particle"]
+transparency = 1
+vertex_color_use_as_albedo = true
+albedo_color = Color(1, 1, 1, 0.8)
+billboard_mode = 3
+particles_anim_h_frames = 1
+particles_anim_v_frames = 1
+particles_anim_loop = false
+
+[sub_resource type="QuadMesh" id="QuadMesh_smoke"]
+material = SubResource("StandardMaterial3D_particle")
+size = Vector2(0.5, 0.5)
+
+[node name="Main" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_1")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 10, 0)
+light_energy = 1.5
+
+[node name="PlanetContainer" type="Node3D" parent="."]
+script = ExtResource("1_manager")
+
+[node name="Spaceship" type="Node3D" parent="."]
+script = ExtResource("2_spaceship")
+
+[node name="RocketBody" type="Node3D" parent="Spaceship"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+
+[node name="Hull" type="MeshInstance3D" parent="Spaceship/RocketBody"]
+transform = Transform3D(-1, -8.74228e-08, 3.82137e-15, 8.74228e-08, -1, 8.74228e-08, -3.82137e-15, 8.74228e-08, 1, 0, 0, 0)
+mesh = SubResource("CylinderMesh_rocket")
+surface_material_override/0 = SubResource("StandardMaterial3D_rocket")
+
+[node name="Nose" type="MeshInstance3D" parent="Spaceship/RocketBody"]
+transform = Transform3D(-1, -8.74228e-08, 3.82137e-15, 8.74228e-08, -1, 8.74228e-08, -3.82137e-15, 8.74228e-08, 1, 0, -2, 1.74846e-07)
+mesh = SubResource("CylinderMesh_nose")
+surface_material_override/0 = SubResource("StandardMaterial3D_rocket")
+
+[node name="AstronautSeated" type="Node3D" parent="Spaceship/RocketBody"]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, -2.46355e-08, 0.8)
+
+[node name="Body" type="MeshInstance3D" parent="Spaceship/RocketBody/AstronautSeated"]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 8.74227e-09, 1.54353, 0.2)
+mesh = SubResource("CapsuleMesh_astro")
+surface_material_override/0 = SubResource("StandardMaterial3D_white")
+
+[node name="Visor" type="MeshInstance3D" parent="Spaceship/RocketBody/AstronautSeated"]
+transform = Transform3D(-0.7, 0, -4.37114e-08, 0, 0.4, 0, 6.11959e-08, 0, -0.5, -8.74228e-09, 1.74353, -5.96046e-08)
+mesh = SubResource("CapsuleMesh_astro")
+surface_material_override/0 = SubResource("StandardMaterial3D_visor")
+
+[node name="EngineParticles" type="GPUParticles3D" parent="Spaceship/RocketBody"]
+transform = Transform3D(-1, -8.74228e-08, 3.82137e-15, 8.74228e-08, -1, 8.74228e-08, -3.82137e-15, 8.74228e-08, 1, 0, 1.5, -1.31134e-07)
+amount = 40
+lifetime = 0.4
+process_material = SubResource("ParticleProcessMaterial_fire")
+draw_pass_1 = SubResource("QuadMesh_smoke")
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 60)
+current = true
+fov = 60.0
